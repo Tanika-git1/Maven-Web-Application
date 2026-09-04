@@ -97,13 +97,13 @@
 	    <repository>
 	      <id>nexus</id>
 	      <name>amazon-Releases Nexus Repository</name>
-	      <url>http://52.91.82.246:8081/repository/amazon-release/</url>
+	      <url>http://184.72.92.105:8081/repository/amazon-release/</url>
 	    </repository>
 	    
 	    <snapshotRepository>
 	      <id>nexus</id>
 	      <name>amazon-Snapshot Nexus Repository </name>
-	      <url>http://52.91.82.246:8081/repository/amazon-snapshot/</url>
+	      <url>http://184.72.92.105:8081/repository/amazon-snapshot/</url>
 	    </snapshotRepository>
 	    
 	</distributionManagement>
