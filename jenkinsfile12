@@ -1,0 +1,19 @@
+node{
+def mavenHome=tool name:'maven-new' , type: 'maven'
+properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '5', numToKeepStr: '5'))])
+stage('checkout'){ 
+git branch: 'qa', url: 'https://github.com/Tanika-git1/Maven-Web-Application.git'
+}
+stage('build'){
+sh "${mavenHome}/bin/mvn clean package"
+}
+stage('sonarqube analysis'){
+sh "${mavenHome}/bin/mvn clean package sonar:sonar"    
+}
+stage('nexusupload'){
+sh "${mavenHome}/bin/mvn clean package sonar:sonar deploy"
+}
+stage('deploy to tomcat'){
+sshagent(credentials: ['015f0382-dcc4-4849-bd0f-01c5ca708da4'], executable: '') {
+sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@3.83.236.134:/opt/apache-tomcat-9.0.120/webapps/ "    
+   }    
