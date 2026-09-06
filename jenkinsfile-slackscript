@@ -1,0 +1,106 @@
+// =================================================
+    // Slack Notification
+    // =================================================
+
+    def SendSlackNotification = { String buildStatus = 'STARTED' ->
+
+        buildStatus = buildStatus ?: 'SUCCESS'
+
+        def color
+
+        if (buildStatus == 'STARTED') {
+            color = '#D4DADF'
+        }
+        else if (buildStatus == 'SUCCESS') {
+            color = '#BDFFC3'
+        }
+        else if (buildStatus == 'UNSTABLE') {
+            color = '#FFFE89'
+        }
+        else {
+            color = '#FF9FA1'
+        }
+
+        def msg = "${buildStatus}: `${env.JOB_NAME}` #${env.BUILD_NUMBER}:\n${env.BUILD_URL}"
+
+        slackSend(
+            color: color,
+            message: msg
+        )
+    }
+node {
+
+    // =================================================
+    // Maven
+    // =================================================
+
+    def mavenHome = tool name: 'maven-new', type: 'maven'
+
+
+    // =================================================
+    // Build Discarder
+    // =================================================
+
+    properties([
+        buildDiscarder(
+            logRotator(
+                artifactDaysToKeepStr: '',
+                artifactNumToKeepStr: '',
+                daysToKeepStr: '5',
+                numToKeepStr: '5'
+            )
+        )
+    ])
+
+
+    // =================================================
+    // TRY
+    // =================================================
+
+    try {
+
+        SendSlackNotification('STARTED')
+
+
+        stage('checkout') {
+
+            git(
+                branch: 'qa',
+                url: 'https://github.com/Tanika-git1/Maven-Web-Application.git'
+            )
+             SendSlackNotification('checkout successful')//individually send notification
+        }
+
+
+        stage('build') {
+
+            sh "${mavenHome}/bin/mvn clean package"
+           SendSlackNotification('Build Successful')//individually send notification 
+           
+        }
+       currentBuild.result = 'SUCCESS'
+    }
+
+
+    // =================================================
+    // CATCH
+    // =================================================
+
+    catch (e) {
+
+        currentBuild.result = 'FAILURE'
+
+        throw e
+    }
+
+
+    // =================================================
+    // FINALLY
+    // =================================================
+
+    finally {
+
+        SendSlackNotification(currentBuild.result)
+    }
+}
+ 
