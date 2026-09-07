@@ -1,0 +1,54 @@
+pipeline {
+agent any //options,tools
+options {
+  buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: '10')
+  timestamps()
+}
+tools {
+maven 'maven-new'
+}
+stages { 
+//start and information about server
+stage('start') {
+  steps {
+  echo "pipeline started"      
+  sh 'date'
+  sh 'hostname'
+  }
+}
+//this stage for checkout    
+ stage('checkout') {
+  steps {
+  git 'https://github.com/Tanika-git1/Maven-Web-Application.git' 
+  }
+}
+//this stage for build
+stage('build') {
+ steps {
+ sh "mvn clean package"   
+  }
+}
+//this stage for sonar 
+stage('sonar') {
+ steps {
+ sh "mvn clean sonar:sonar"   
+  }
+}
+//this stage for nexus 
+stage('nexus') {
+ steps {
+ sh "mvn clean deploy"   
+  }
+}
+//this stage for tomcat   
+stage('tomcat') {
+ steps {
+  sshagent(credentials: ['015f0382-dcc4-4849-bd0f-01c5ca708da4'], executable: '') {
+sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@100.31.102.154:/opt/apache-tomcat-9.0.120/webapps/ "     
+  }
+}    
+}
+    
+}//stages closing
+
+}// pipeline closing
